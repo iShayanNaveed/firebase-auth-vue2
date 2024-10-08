@@ -93,7 +93,9 @@
                 </div>
                 {{ todo.content }}
               </div>
-              <div class="btn-filed d-flex align-items-center justify-content-center">
+              <div
+                class="btn-filed d-flex align-items-center justify-content-center"
+              >
                 <i
                   class="fa-solid fa-check bg-white btn text-dark"
                   @click="toggleTodo(todo.id)"
@@ -119,21 +121,25 @@
                 </label>
                 <i
                   class="fa-solid fa-file bg-dark text-white btn ms-2"
-                  @click="uploadFile(todo.id)" v-if="uploadLoader"
+                  @click="uploadFile(todo.id)"
+                  v-if="uploadLoader"
                 >
                 </i>
                 <b-spinner
-                    label="Loading..."
-                    v-if="uploadLoading"
-                    class="ms-2 bg-dark text-white btn"
-                  ></b-spinner
-                >
+                  label="Loading..."
+                  v-if="uploadLoading"
+                  class="ms-2 bg-dark text-white btn"
+                ></b-spinner>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <button class="btn btn-success d-flex mx-auto" @click="showAll(lastDoc)">
+      <button
+        class="btn btn-success d-flex mx-auto"
+        @click="showAll(lastDoc)"
+        v-if="showmorebtn"
+      >
         Show More
       </button>
     </div>
@@ -156,6 +162,7 @@ import {
   where,
   getDocs,
   startAfter,
+  getDoc,
 } from "firebase/firestore";
 import { db } from "@/components/firebase/firebase.js";
 import Toast from "vue-toastification";
@@ -187,15 +194,16 @@ export default {
       addloader: true,
       lastDoc: null,
       loader: true,
-      uploadLoader : true,
-      uploadLoading  : false
+      uploadLoader: true,
+      uploadLoading: false,
+      showmorebtn: false,
     };
   },
   methods: {
     async addTodo() {
       this.addloader = false;
       this.addLoading = true;
-      setTimeout(() => {
+      setTimeout(async () => {
         const todo = {
           content: this.newTodo,
           done: false,
@@ -203,10 +211,11 @@ export default {
           image: "",
           creatorId: this.$store.state.user.uid,
         };
-        addDoc(collection(db, "todos"), todo);
-        this.todos.unshift(todo);
-        console.log("addtodos", this.todos);
+        const todoRef = await addDoc(collection(db, "todos"), todo);
+        console.log("iderfgerter45", todoRef.id);
 
+        this.todos.unshift({ id: todoRef.id, ...todo });
+        console.log("addtodos", this.todos);
         this.newTodo = "";
 
         this.$toast.success("New todo added succesfully", {
@@ -221,6 +230,8 @@ export default {
       // this.tasks = this.tasks.filter((todo) => todo.id !== id);
       // deleteDoc(doc(db, "todos", id));
       console.log("todosdel", this.todos);
+      console.log("id", id);
+
       // console.log("taskstodo",this.tasks);
 
       deleteDoc(doc(db, "todos", id));
@@ -229,19 +240,21 @@ export default {
       });
     },
     async toggleTodo(id) {
+      let index = this.todos.findIndex((todo) => todo.id === id);
+      this.todos[index].done = !this.todos[index].done;
       const todoCollection = doc(db, "todos", id);
       await updateDoc(todoCollection, {
         done: this.todos[index].done,
       });
-      let index = this.todos.findIndex((todo) => todo.id === id);
-      this.todos[index].done = !this.todos[index].done;
-      // console.log("done", this.todos[index].done );
-      console.log(id, "id");
-
-      console.log("value", this.todos);
       this.$toast.info("todo status changed successfully", {
         timeout: 2000,
       });
+
+      // console.log("done", this.todos[index].done );
+      console.log(id, "id");
+      console.log("index", index);
+
+      console.log("value", this.todos);
     },
     initiateTodo(id) {
       this.activeTodo = id;
@@ -281,13 +294,9 @@ export default {
       console.log("test45", selectedFile);
     },
     async uploadFile(file) {
-    
-     
       console.log("test123");
       const index = this.todos.findIndex((todo) => todo.id === this.activeTodo);
-  
-     
-      
+
       const storage = getStorage();
       try {
         console.log("File before upload:", file);
@@ -328,7 +337,6 @@ export default {
     },
     searchTodo(e) {
       this.search = e.target.value;
-     
     },
     sortData(event) {
       if (event.target.value === "Oldest") {
@@ -339,6 +347,7 @@ export default {
     },
 
     async showAll(lastVisible = null) {
+    
       const todoCollection = collection(db, "todos");
       let todosQuery = "";
       if (lastVisible) {
@@ -347,16 +356,17 @@ export default {
           where("creatorId", "==", this.$store.state.user.uid),
           orderBy("date", "desc"),
           startAfter(lastVisible),
-          limit(3)
+          limit(5)
         );
       } else {
         todosQuery = query(
           todoCollection,
           where("creatorId", "==", this.$store.state.user.uid),
           orderBy("date", "desc"),
-          limit(3)
+          limit(5)
         );
       }
+      
       const querySnapshot = await getDocs(todosQuery);
       const fbTodos = [];
       this.lastDoc = querySnapshot.docs[querySnapshot.docs.length - 1];
@@ -372,23 +382,32 @@ export default {
         };
 
         fbTodos.push(todo);
-      });
+      }); 
       console.log(fbTodos, "fbtodos");
+      if(fbTodos.length >= 3){
+        // 
+        this.showmorebtn = true;
+      }
       const temp = [...this.todos, ...fbTodos];
       this.todos = temp;
       this.tasks = this.todos;
- 
     },
   },
   mounted() {
     this.showAll();
+    // if (this.todos.length < 3) {
+    //     this.showmorebtn = false;
+    //   }else {
+    //     this.showmorebtn = true;
+    //   }
+    console.log("todos",this.todos.length);
+    
   },
   computed: {
     user() {
       return this.$store.getters.user;
     },
   },
-
 };
 </script>
 
@@ -447,7 +466,6 @@ export default {
    */
   max-width: 3rem;
   border-radius: 50%;
-
 }
 .btn-filed {
   width: 25%;

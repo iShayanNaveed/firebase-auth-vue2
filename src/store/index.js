@@ -126,9 +126,12 @@ export default new Vuex.Store({
           //   // uid : user.uid,
           //   password: user.password,
           // };
-          console.log(user);
-          
           commit("setUser", auth.currentUser);
+          router.push("/todos");
+          Vue.$toast.success("user signin successfully", {
+            timeout: 2000,
+          });
+          
         })
         .catch((error) => {
           // commit("setLoading", false);
@@ -138,12 +141,8 @@ export default new Vuex.Store({
             timeout: 2000,
           });
         });
-        Vue.$toast.success("user signin successfully", {
-          timeout: 2000,
-        });
   
        
-        router.push("/todos");
       // } catch (error) {
       //   Vue.$toast.error("An un expected error occurs", {
       //     timeout: 2000
