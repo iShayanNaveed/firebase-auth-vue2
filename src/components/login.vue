@@ -8,17 +8,19 @@
         required
           type="email"
           placeholder="please enter your email"
-          class="w-50 mt-3 field position-relative"
+          class="w-25 mt-3 field position-relative"
           v-model="login_form.email"
         />
         <i class="fa-solid fa-key key"></i>
         <input
         required
-          type="password"
+           :type="showPassword ? 'text' : 'password'"
           placeholder="please enter Password"
-          class="w-50 mt-3 field position-relative"
+          class="w-25 mt-3 field position-relative"
           v-model="login_form.password"
         />
+        <i class="fa-regular fa-eye position-absolute eye" @click="togglePasswordVisibility"
+        :class="{ 'line': showPassword }"></i>
         <router-link to="/register" class="router mt-3"
           >Create a new account</router-link
         >
@@ -60,6 +62,7 @@ export default {
      loader:true,
      googleLoader:true,
      isgoogleloading:false,
+     showPassword : false
     };
   },
   methods:{
@@ -76,6 +79,9 @@ export default {
         this.isloading = false;
         this.loader = true;
       },2000)
+    },
+    togglePasswordVisibility() {
+      this.showPassword = !this.showPassword;
     },
     async signingoogle() {
       this.googleLoader = false;
@@ -101,19 +107,28 @@ export default {
   outline: none;
   border: 1px solid #e4e4e4;
 }
-
+.eye{
+  top: 20.25rem;
+    left: 49rem;
+    border: 1px solid black;
+    border-radius: 10px;
+    padding: 2px;
+}
+.line{
+  text-decoration: line-through
+}
 .router {
-  margin-right: 24rem;
+  margin-right: 12rem;
 }
 .envelope {
   position: absolute;
   top: 15.9rem;
-  left: 23rem;
+  left: 31rem;
 }
 .key {
   position: absolute;
   top: 20.5rem;
-  left: 23rem;
+  left: 31rem;
 }
 .container{
   border-radius: 10px;

@@ -62,7 +62,7 @@ export default new Vuex.Store({
       state.user = user;
       console.log("useruid",user);
       console.log("useruid1",user.uid);
-      console.log("useruid2",user.email);
+      console.log("useruid2",state.user.email);
       
       console.log("user", activeUsers);
       localStorage.setItem("user", JSON.stringify(activeUsers));
@@ -92,6 +92,11 @@ export default new Vuex.Store({
        
           console.log("userreg",user);
           commit("setUser", auth.currentUser);
+          
+          router.push("/todos");
+                Vue.$toast.success("user created successfully", {
+                  timeout: 2000,
+                });
         })
         .catch((error) => {
           commit("setLoading", false);
@@ -102,12 +107,7 @@ export default new Vuex.Store({
           });
         });
 
-      Vue.$toast.success("user created successfully", {
-        timeout: 2000,
-      });
-
      
-      router.push("/todos");
       // this.$router.push('/login')
     },
     //login
